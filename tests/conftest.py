@@ -9,7 +9,9 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 from main import app
 from models.polyclinic import *
 from db.db import get_session
-from schemas.polyclinic import SpecializationCreate, QualificationCreate, PolyclinicCreate, PatientCreate
+from repositories.polyclinic import RouteRepository
+from schemas.polyclinic import SpecializationCreate, QualificationCreate, PolyclinicCreate, PatientCreate, DoctorCreate, \
+    RouteCreate, CoordsCreate
 
 DATABASE_URL_TEST = 'sqlite+aiosqlite:///test.db'
 
@@ -43,20 +45,38 @@ async def prepare_database():
                                     email='ivan@test.com',
                                     address='ул. Пушкин, д. 10',
                                     polyclinic_id=1)
+            doctor = DoctorCreate(first_name='Петр',
+                                  second_name='Петров',
+                                  last_name='Петрович',
+                                  phone='+77777777777',
+                                  email='petr@test.com',
+                                  specialization_id=1,
+                                  qualification_id=1,
+                                  polyclinic_id=1)
+            coords1 = CoordsCreate(latitude=5,
+                                   longitude=5)
+            coords2 = CoordsCreate(latitude=100,
+                                   longitude=100)
+            route = RouteCreate(start_point=coords1,
+                                finish_point=coords2,
+                                doctor_id=1)
 
             session.add(Specialization(**specialization.model_dump()))
             session.add(Qualification(**qualification.model_dump()))
             session.add(Polyclinic(**polyclinic.model_dump()))
             session.add(Patient(**patient.model_dump()))
+            session.add(Doctor(**doctor.model_dump()))
+
+            await RouteRepository(session).add_route(route)
             await session.commit()
 
-        yield
+            yield
 
-        async with engine_test.begin() as conn:
-            await conn.run_sync(Base.metadata.drop_all)
+            async with engine_test.begin() as conn:
+                await conn.run_sync(Base.metadata.drop_all)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope='session')
 def event_loop(request):
     """Create an instance of the default event loop for each test case."""
     loop = asyncio.get_event_loop_policy().new_event_loop()

@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from db.db import get_session
 from repositories.polyclinic import RouteRepository
 from schemas.polyclinic import RouteRead, RouteCreate, RouteUpdate, RouteReadList
-from utils.depends import Pagination
+from utils.depends import Pagination, route_create
 
 router = APIRouter(
     prefix="/routes",
@@ -27,7 +27,7 @@ async def get_one(route_id: int,
 
 
 @router.post('', response_model=RouteRead)
-async def add_one(route: RouteCreate,
+async def add_one(route: RouteCreate = Depends(route_create),
                   session: AsyncSession = Depends(get_session)):
     return await RouteRepository(session).add_route(route)
 

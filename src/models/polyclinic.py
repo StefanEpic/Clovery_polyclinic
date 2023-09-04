@@ -132,10 +132,10 @@ class Route(Base):
     start_point: Mapped[int] = mapped_column(ForeignKey("coords.id"))
     finish_point: Mapped[int] = mapped_column(ForeignKey("coords.id"))
     current_point: Mapped[Optional[int]] = mapped_column(ForeignKey("coords.id"))
-    doctor: Mapped[int] = mapped_column(ForeignKey("doctor.id"))
+    doctor_id: Mapped[int] = mapped_column(ForeignKey("doctor.id"))
     route_active: Mapped[bool] = mapped_column(default=True)
 
-    idx_doctor = Index('idx_doctor', doctor)
+    idx_doctor_id = Index('idx_doctor_id', doctor_id)
 
     def to_read_model(self, start_point, finish_point, current_point) -> RouteRead:
         return RouteRead(
@@ -143,6 +143,6 @@ class Route(Base):
             start_point=start_point,
             finish_point=finish_point,
             current_point=current_point,
-            doctor=self.doctor,
+            doctor_id=self.doctor_id,
             route_active=self.route_active
         )

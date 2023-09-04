@@ -140,7 +140,7 @@ class PatientUpdate(BaseModel):
 class RouteCreate(BaseModel):
     start_point: CoordsCreate
     finish_point: CoordsCreate
-    doctor: int
+    doctor_id: int
 
 
 class RouteRead(BaseModel):
@@ -148,7 +148,7 @@ class RouteRead(BaseModel):
     start_point: CoordsRead
     finish_point: CoordsRead
     current_point: CoordsRead
-    doctor: int
+    doctor_id: int
     route_active: bool
 
 
@@ -157,7 +157,7 @@ class RouteReadList(BaseModel):
     start_point: int
     finish_point: int
     current_point: int
-    doctor: int
+    doctor_id: int
     route_active: bool
 
 
