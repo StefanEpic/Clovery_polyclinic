@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.db import get_session
 from repositories.polyclinic import DoctorRepository
-from schemas.polyclinic import DoctorRead, DoctorCreate, DoctorUpdate
+from schemas.polyclinic import DoctorRead, DoctorCreate, DoctorUpdate, RouteRead
 from utils.depends import Pagination
 
 router = APIRouter(
@@ -24,6 +24,12 @@ async def get_list(pagination: Pagination = Depends(Pagination),
 async def get_one(doctor_id: int,
                   session: AsyncSession = Depends(get_session)):
     return await DoctorRepository(session).get_one(doctor_id)
+
+
+@router.get('/{doctor_id}/route', response_model=RouteRead)
+async def get_one(doctor_id: int,
+                  session: AsyncSession = Depends(get_session)):
+    return await DoctorRepository(session).get_doctor_route(doctor_id)
 
 
 @router.post('', response_model=DoctorRead)

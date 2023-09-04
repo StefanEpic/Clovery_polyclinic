@@ -1,10 +1,11 @@
 import datetime
 from typing import Optional, List
 
-from sqlalchemy import String, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase
+from sqlalchemy import String, ForeignKey, Index
+from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase, validates
 
-from schemas.polyclinic import CoordsRead
+from schemas.polyclinic import CoordsRead, RouteRead
+from utils.validators import name_valid, phone_valid, email_valid
 
 
 class Base(DeclarativeBase):
@@ -19,6 +20,10 @@ class Specialization(Base):
     description: Mapped[Optional[str]] = mapped_column(String(255))
     doctors: Mapped[Optional[List["Doctor"]]] = relationship(back_populates="specialization")
 
+    @validates("title")
+    def validate_name(self, key, title):
+        return name_valid(title)
+
 
 class Qualification(Base):
     __tablename__ = "qualification"
@@ -27,6 +32,10 @@ class Qualification(Base):
     title: Mapped[str] = mapped_column(String(100), unique=True)
     description: Mapped[Optional[str]] = mapped_column(String(255))
     doctors: Mapped[Optional[List["Doctor"]]] = relationship(back_populates="qualification")
+
+    @validates("title")
+    def validate_name(self, key, title):
+        return name_valid(title)
 
 
 class Coords(Base):
@@ -74,6 +83,19 @@ class Doctor(Base):
     polyclinic_id: Mapped[int] = mapped_column(ForeignKey("polyclinic.id"))
     polyclinic: Mapped["Polyclinic"] = relationship(back_populates="doctors")
 
+    @validates("first_name", "second_name", "last_name")
+    def validate_name(self, key, *names):
+        for name in names:
+            return name_valid(name)
+
+    @validates("phone")
+    def validate_phone(self, key, phone):
+        return phone_valid(phone)
+
+    @validates("email")
+    def validate_email(self, key, email):
+        return email_valid(email)
+
 
 class Patient(Base):
     __tablename__ = "patient"
@@ -89,6 +111,19 @@ class Patient(Base):
     polyclinic_id: Mapped[int] = mapped_column(ForeignKey("polyclinic.id"))
     polyclinic: Mapped["Polyclinic"] = relationship(back_populates="patients")
 
+    @validates("first_name", "second_name", "last_name")
+    def validate_name(self, key, *names):
+        for name in names:
+            return name_valid(name)
+
+    @validates("phone")
+    def validate_phone(self, key, phone):
+        return phone_valid(phone)
+
+    @validates("email")
+    def validate_email(self, key, email):
+        return email_valid(email)
+
 
 class Route(Base):
     __tablename__ = "route"
@@ -97,5 +132,17 @@ class Route(Base):
     start_point: Mapped[int] = mapped_column(ForeignKey("coords.id"))
     finish_point: Mapped[int] = mapped_column(ForeignKey("coords.id"))
     current_point: Mapped[Optional[int]] = mapped_column(ForeignKey("coords.id"))
-    doctor: Mapped[int] = mapped_column(ForeignKey("doctor.id"), index=True)
+    doctor: Mapped[int] = mapped_column(ForeignKey("doctor.id"))
     route_active: Mapped[bool] = mapped_column(default=True)
+
+    idx_doctor = Index('idx_doctor', doctor)
+
+    def to_read_model(self, start_point, finish_point, current_point) -> RouteRead:
+        return RouteRead(
+            id=self.id,
+            start_point=start_point,
+            finish_point=finish_point,
+            current_point=current_point,
+            doctor=self.doctor,
+            route_active=self.route_active
+        )

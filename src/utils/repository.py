@@ -47,7 +47,7 @@ class SQLAlchemyRepository(AbstractRepository):
             res = await self.session.get(self.model, self_id)
             if not res:
                 raise HTTPException(status_code=404, detail="Not found")
-            res_data = data.dict(exclude_unset=True)
+            res_data = data.model_dump(exclude_unset=True)
             for key, value in res_data.items():
                 setattr(res, key, value)
             self.session.add(res)
@@ -64,3 +64,15 @@ class SQLAlchemyRepository(AbstractRepository):
         await self.session.delete(res)
         await self.session.commit()
         return {"detail": "success"}
+
+
+class UserFilterRepository(SQLAlchemyRepository):
+    async def get_user_filter_list(self, offset: int, limit: int, phone: str, email: str):
+        stmt = select(self.model).offset(offset).limit(limit)
+        res = await self.session.execute(stmt)
+        res = [row[0] for row in res.all()]
+        if phone:
+            res = list(filter(lambda x: x.phone == phone, res))
+        if email:
+            res = list(filter(lambda x: x.email == email, res))
+        return res

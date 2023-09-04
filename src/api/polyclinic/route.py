@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.db import get_session
 from repositories.polyclinic import RouteRepository
-from schemas.polyclinic import RouteRead, RouteCreate, RouteUpdate
+from schemas.polyclinic import RouteRead, RouteCreate, RouteUpdate, RouteReadList
 from utils.depends import Pagination
 
 router = APIRouter(
@@ -14,7 +14,7 @@ router = APIRouter(
 )
 
 
-@router.get('', response_model=List[RouteRead])
+@router.get('', response_model=List[RouteReadList])
 async def get_list(pagination: Pagination = Depends(Pagination),
                    session: AsyncSession = Depends(get_session)):
     return await RouteRepository(session).get_list(pagination.skip, pagination.limit)
@@ -23,7 +23,7 @@ async def get_list(pagination: Pagination = Depends(Pagination),
 @router.get('/{route_id}', response_model=RouteRead)
 async def get_one(route_id: int,
                   session: AsyncSession = Depends(get_session)):
-    return await RouteRepository(session).get_one(route_id)
+    return await RouteRepository(session).get_route(route_id)
 
 
 @router.post('', response_model=RouteRead)
@@ -42,4 +42,4 @@ async def edit_one(route_id: int,
 @router.delete('/{route_id}')
 async def delete_one(route_id: int,
                      session: AsyncSession = Depends(get_session)):
-    return await RouteRepository(session).delete_one(route_id)
+    return await RouteRepository(session).delete_route(route_id)

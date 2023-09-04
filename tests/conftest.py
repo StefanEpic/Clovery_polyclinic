@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 from main import app
 from models.polyclinic import *
 from db.db import get_session
-from schemas.polyclinic import SpecializationCreate
+from schemas.polyclinic import SpecializationCreate, QualificationCreate, PolyclinicCreate, PatientCreate
 
 DATABASE_URL_TEST = 'sqlite+aiosqlite:///test.db'
 
@@ -34,7 +34,20 @@ async def prepare_database():
         async_session = async_sessionmaker(engine_test, class_=AsyncSession, expire_on_commit=False)
         async with async_session() as session:
             specialization = SpecializationCreate(title='Педиатр')
+            qualification = QualificationCreate(title='Лаборант')
+            polyclinic = PolyclinicCreate(title='Главная Детская №5', address='ул. Главная, д. 5')
+            patient = PatientCreate(first_name='Иван',
+                                    second_name='Иванов',
+                                    last_name='Иванович',
+                                    phone='+77777777777',
+                                    email='ivan@test.com',
+                                    address='ул. Пушкин, д. 10',
+                                    polyclinic_id=1)
+
             session.add(Specialization(**specialization.model_dump()))
+            session.add(Qualification(**qualification.model_dump()))
+            session.add(Polyclinic(**polyclinic.model_dump()))
+            session.add(Patient(**patient.model_dump()))
             await session.commit()
 
         yield

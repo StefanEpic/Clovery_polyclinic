@@ -152,6 +152,15 @@ class RouteRead(BaseModel):
     route_active: bool
 
 
+class RouteReadList(BaseModel):
+    id: int
+    start_point: int
+    finish_point: int
+    current_point: int
+    doctor: int
+    route_active: bool
+
+
 class RouteUpdate(BaseModel):
     current_point: CoordsUpdate = None
     route_active: bool = None
